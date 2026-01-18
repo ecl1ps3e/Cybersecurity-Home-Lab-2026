@@ -1,45 +1,77 @@
-# Enterprise Security Simulation Lab (2026)
+# 🛡️ Enterprise Security Simulation Lab (2026)
 
-## 📌 Project Overview
-This repository documents a self-contained security laboratory designed to simulate real-world attack vectors and defensive monitoring. The environment was architected to mimic a corporate network, featuring segmented subnets, automated threat detection, and custom Python-based security tools.
+![Badge](https://img.shields.io/badge/Security-Red%20%26%20Blue%20Team-red) ![Badge](https://img.shields.io/badge/Python-3.11-blue) ![Badge](https://img.shields.io/badge/Platform-Linux-grey)
+
+## 📌 Executive Summary
+This project documents the construction of an isolated, virtualized corporate network (`CyberLab`) to simulate real-world attack vectors and defensive monitoring. The objective was to engineer a complete kill chain—from infrastructure deployment and custom tool development to vulnerability exploitation and SIEM detection.
 
 **Tech Stack:**
-* **Infrastructure:** Oracle VirtualBox, pfSense (Firewall), NAT Networks
-* **Red Team (Offensive):** Kali Linux, Custom Python Scripts, Nmap, Metasploit
-* **Blue Team (Defensive):** Wazuh SIEM/EDR, Splunk, Suricata
+* **Infrastructure:** Oracle VirtualBox, NAT Network Segmentation
+* **Red Team (Offensive):** Kali Linux, Metasploit Framework, Custom Python Tooling
+* **Blue Team (Defensive):** Wazuh SIEM/XDR, Auditd, Syslog
+
+---
 
 ## 🏗️ Phase 1: Network Architecture
-*Current Status: Deployed*
+*Status: Deployed*
 
-**Topology:**
-* **Attacker Node:** Kali Linux (Rolling 2026) - IP: `10.0.0.5`
-* **Victim Node:** Metasploitable 2 (Linux) - IP: `10.0.0.10`
-* **SIEM Node:** Wazuh Server (OVA) - IP: `10.0.0.20`
-* **Gateway:** Virtualized Router/Firewall
+I architected a segregated NAT Network to simulate an internal corporate environment, ensuring traffic isolation from the host machine while allowing inter-VM communication.
 
-*[Place Network Diagram Screenshot Here]*
+**Topology Map:**
+| Node Type | OS | IP Address | Role |
+| :--- | :--- | :--- | :--- |
+| **Attacker** | Kali Linux (2025.4) | `10.0.2.3` | Command & Control (C2) |
+| **Defender** | Wazuh Server | `10.0.2.4` | SIEM & Log Aggregator |
+| **Victim** | Metasploitable 2 | `10.0.2.5` | Vulnerable Production Server |
+
+---
 
 ## ⚔️ Phase 2: Offensive Tool Development (Python)
-I developed a custom, multi-threaded port scanner to understand the TCP handshake process at a packet level.
-* **Features:** Multi-threading for speed, Banner Grabbing, Timeout handling.
-* **Code:** [Link to /scripts/scanner.py]
+Instead of relying solely on pre-made tools like Nmap, I developed a custom **Multi-Threaded Port Scanner** in Python to demonstrate understanding of the TCP 3-Way Handshake and socket programming.
 
-## 🛡️ Phase 3: Threat Detection & Analysis
-Using Wazuh EDR, I configured custom rules to detect the signature of my custom Python scanner.
+* **Logic:** Implements `threading` and `queue` to scan 1,000 ports in <0.5 seconds.
+* **Result:** Successfully identified open services on the target (`10.0.2.5`).
 
-**Alert Log Sample:**
-> **Rule ID:** 100002
-> **Level:** 12 (High)
-> **Description:** "Nmap-style scan detected from internal host 10.0.0.5"
+> **[View Source Code](scripts/scanner.py)**
 
-*[Place Screenshot of Wazuh Dashboard Here]*
+![Python Scan Result](images/network_scan.png)
+*Figure 1: Custom Python script identifying open ports (21, 22, 80) on the victim machine.*
 
-Phase 4: Vulnerability Exploitation
+---
 
-Identify vulnerability: vsftpd 2.3.4 service detected on Port 21.
+## 🛡️ Phase 3: Threat Detection & Analysis (Blue Team)
+Configured the **Wazuh SIEM** to ingest telemetry from network agents. The system successfully detected the scanning activity from Phase 2.
 
-Exploit Used: Metasploit vsftpd_234_backdoor.
+**Detection Logic:**
+* **Alert Level:** 12 (High Severity)
+* **Rule ID:** 100002
+* **Trigger:** "Network scan detected from internal host 10.0.2.3"
 
-Result: Obtained Root Access (Remote Code Execution) on the target server.
+![Wazuh Dashboard](images/wazuh_dashboard.png)
+*Figure 2: Wazuh Dashboard visualizing active agents and security alerts.*
 
-<img width="774" height="745" alt="hammed" src="https://github.com/user-attachments/assets/a658a151-10f6-4ce2-b9a1-17baff607186" />
+---
+
+## 🧨 Phase 4: Vulnerability Exploitation
+*Objective: Obtain Root Access on the Victim Node.*
+
+Following the reconnaissance phase which identified **vsftpd 2.3.4** running on Port 21, I executed a targeted exploit to bypass authentication.
+
+**Attack Chain:**
+1.  **Vulnerability ID:** Backdoor Command Execution in `vsftpd v2.3.4`.
+2.  **Exploit Framework:** Metasploit (`exploit/unix/ftp/vsftpd_234_backdoor`).
+3.  **Payload:** Remote Shell (Reverse TCP).
+
+**Proof of Compromise:**
+The exploit successfully opened a backdoor connection on port 6200, granting `UID=0 (Root)` privileges.
+
+```bash
+# Proof of Root Access
+whoami
+> root
+
+hostname
+> metasploitable
+
+id
+> uid=0(root) gid=0(root)
