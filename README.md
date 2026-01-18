@@ -32,9 +32,9 @@ Instead of relying solely on pre-made tools like Nmap, I developed a custom **Mu
 * **Logic:** Implements `threading` and `queue` to scan 1,000 ports in <0.5 seconds.
 * **Result:** Successfully identified open services on the target (`10.0.2.5`).
 
-> **[View Source Code](scripts/scanner.py)**
+> **![VirtualBox Infrastructure](infrastructure.png)**
 
-![Python Scan Result](images/network_scan.png)
+![Python Scan Result](network_scan.png)
 *Figure 1: Custom Python script identifying open ports (21, 22, 80) on the victim machine.*
 
 ---
@@ -47,7 +47,7 @@ Configured the **Wazuh SIEM** to ingest telemetry from network agents. The syste
 * **Rule ID:** 100002
 * **Trigger:** "Network scan detected from internal host 10.0.2.3"
 
-![Wazuh Dashboard](images/wazuh_dashboard.png)
+![Wazuh Dashboard](wazuh_dashboard.png)
 *Figure 2: Wazuh Dashboard visualizing active agents and security alerts.*
 
 ---
