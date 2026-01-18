@@ -33,3 +33,13 @@ Using Wazuh EDR, I configured custom rules to detect the signature of my custom 
 > **Description:** "Nmap-style scan detected from internal host 10.0.0.5"
 
 *[Place Screenshot of Wazuh Dashboard Here]*
+
+Phase 4: Vulnerability Exploitation
+
+Identify vulnerability: vsftpd 2.3.4 service detected on Port 21.
+
+Exploit Used: Metasploit vsftpd_234_backdoor.
+
+Result: Obtained Root Access (Remote Code Execution) on the target server.
+
+<img width="774" height="745" alt="hammed" src="https://github.com/user-attachments/assets/a658a151-10f6-4ce2-b9a1-17baff607186" />
